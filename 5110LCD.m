@@ -1,6 +1,14 @@
 #include "5110LCD.h"
 #include "nrf_delay.h"
 
+//枚举 D/C模式选择 
+typedef enum
+{
+    DC_CMD  = 0,	//写命令
+    DC_DATA = 1		//写数据
+		
+} DCType;
+
 void delay_ms(int t)
 {
 	nrf_delay_ms(t);
@@ -198,7 +206,7 @@ void LCD_WriteByte(unsigned char dt, unsigned char command)
 {
 	unsigned char i; 
 	sce0;            //使能LCD
-	if(command==0)            //传送命令
+	if(command==DC_CMD)            //传送命令
 	   dc0;
 	else
 	   dc1;         //传送数据
@@ -227,12 +235,21 @@ void LCD_Init(void)
   	delay_ms(10);
   	res1;
 	delay_ms(100);
-	LCD_WriteByte(0x21,0);//使用水平寻址,进入拓展指令
-    LCD_WriteByte(0x13, 0);//定液晶偏置系统 1:48
-	LCD_WriteByte(0xbb,0);//设定设置Vop,相当于亮度 
-    LCD_WriteByte(0x20,0);//芯片活动 使用基本指令并且水平寻址
-	LCD_WriteByte(0x0c,0);//设定显示模式，正常显示
-    LCD_Clear();
+	LCD_WriteByte(0x21,DC_CMD);//使用水平寻址,进入拓展指令
+	LCD_WriteByte(0x13, DC_CMD);//定液晶偏置系统 1:48
+	LCD_WriteByte(0xbb,DC_CMD);//设定设置Vop,相当于亮度 
+	LCD_WriteByte(0x20,DC_CMD);//芯片活动 使用基本指令并且水平寻址
+	LCD_WriteByte(0x0c,DC_CMD);//设定显示模式，正常显示
+	
+	LCD_Clear();
+}
+
+// 设置LCD对比度(对比度范围: 0~127)
+void LCD_SetContrast(u8 contrast)
+{
+    LCD_WriteByte(0x21, DC_CMD);
+    LCD_WriteByte(0x80 | contrast, DC_CMD);
+    LCD_WriteByte(0x20, DC_CMD);
 }
 
 //---------------------------------------
